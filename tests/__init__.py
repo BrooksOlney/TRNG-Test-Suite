@@ -1,0 +1,16 @@
+
+from .test_01_monobit import monobit_test
+from .test_02_frequency_within_block import frequency_within_block_test
+from .test_03_runs import runs_test
+from .test_04_longest_run_within_block import longest_run_within_block_test
+from .test_05_binary_matrix_rank import binary_matrix_rank_test
+from .test_06_discrete_fourier_transform import discrete_fourier_transform_test
+from .test_07_non_overlapping_template_matching import non_overlapping_template_matching_test
+from .test_08_overlapping_template_matching import overlapping_template_matching_test
+from .test_09_maurers_universal_statistical import maurers_universal_test
+from .test_10_linear_complexity import linear_complexity_test
+from .test_11_serial import serial_test
+from .test_12_approximate_entropy import approximate_entropy_test
+from .test_13_cumulative_sums import cumulative_sums_test
+from .test_14_random_excursions import random_excursion_test
+from .test_15_random_excursions_variant import random_excursion_variant_test

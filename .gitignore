@@ -1,5 +1,2 @@
-*.bin
-random-data
-__pycache__/*
-*.txt
+*/__pycache__/*
 data/*
