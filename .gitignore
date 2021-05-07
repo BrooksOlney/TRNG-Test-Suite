@@ -1,0 +1,5 @@
+*.bin
+random-data
+__pycache__/*
+*.txt
+data/*
