@@ -25,17 +25,9 @@ def random_matrices(count):
 def analyze_inds(ds, inds):
 
     sms = 0.0
-    # for d, ind in np.column_stack((ds,inds)):
-    #     _inds = np.hstack([ind, np.nonzero(testSeg == d)[0] + Q + 1])
-    #     sms += sum(np.log2(np.diff(_inds)))
     for i in range(len(ds)):
-
         sms += analyze_ind(ds[i], inds[i])
-
-        # for i in _inds:
-        #     sms += np.log2(i - ind)
-        #     ind = i
-
+    
     return sms
 
 def analyze_ind(d, ind):
@@ -110,13 +102,13 @@ class TRNGtester:
 
 def main():
     # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\robert-data')
-    nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\data\random-data', bits=1_000_000_000)
+    # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\data\random-data', bits=1_000_000_000)
     # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\2010-01-01.bin')
-    # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\data\e.txt',bits=1_000_000)
+    nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\data\e.txt',bits=1_000_000)
     # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\data\data\data.pi',bits=1_000_000)
     start = time.time()
-    print(nist.run_nist_tests())
-    # print(linear_complexity_test(nist.binary))
+    # print(nist.run_nist_tests())
+    print(serial_test(nist.binary))
     print(time.time() - start)
 
 
