@@ -39,3 +39,39 @@ def serial_test(binary):
     success2 = p2 >= 0.01
 
     return [p1, success1, p2, success2]
+
+def vectorized_sliding_window(x, n, m):
+    
+    bitsPerJob = 1_000_000
+    r = math.ceil(n // bitsPerJob)
+
+    micounts = np.zeros(2**(16))
+
+    for i in range(r):
+        
+        _x = x[i*bitsPerJob:(i+1)*bitsPerJob]
+        mblocks = np.packbits(
+            np.lib.stride_tricks.as_strided(
+                _x, (len(_x), m), (1,1)
+            ), axis=1
+        ).view(np.uint16).reshape(-1)
+
+        counts = np.bincount(mblocks)
+        micounts[range(counts.size)] += counts
+
+    return micounts
+
+def sliding_window(x, m):
+    
+    micounts = np.zeros(2**(16))
+        
+    mblocks = np.packbits(
+        np.lib.stride_tricks.as_strided(
+            x, (len(x), m), (1,1)
+        ), axis=1
+    ).view(np.uint16).reshape(-1)
+
+    counts = np.bincount(mblocks)
+    micounts[range(counts.size)] += counts
+
+    return micounts

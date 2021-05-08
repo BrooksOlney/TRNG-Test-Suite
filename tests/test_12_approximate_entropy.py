@@ -3,6 +3,7 @@ import math
 import scipy.special as ss
 import multiprocessing as mp
 from functools import partial
+from copy import deepcopy
 
 def approximate_entropy_test(binary):
     """ As with the Serial test, the focus of this test is the
@@ -28,12 +29,12 @@ def approximate_entropy_test(binary):
 
     m1counts = np.zeros(2**16)
 
-    # with mp.Pool(mp.cpu_count() // 8) as p:
-    #     mcounts = np.sum([*p.imap(partial(sliding_window, m=M), mbits)], axis=0)
-    #     m1counts = np.sum([*p.imap(partial(sliding_window, m=M+1), m1bits)], axis=0)
+    with mp.Pool(mp.cpu_count() // 4) as p:
+        mcounts = np.sum([*p.imap(partial(sliding_window, m=M), mbits)], axis=0)
+        m1counts = np.sum([*p.imap(partial(sliding_window, m=M+1), m1bits)], axis=0)
 
-    mcounts = np.sum([*map(partial(sliding_window, m=M), mbits)], axis=0)
-    m1counts = np.sum([*map(partial(sliding_window, m=M+1), m1bits)], axis=0)
+    # mcounts = np.sum([*map(partial(sliding_window, m=M), mbits)], axis=0)
+    # m1counts = np.sum([*map(partial(sliding_window, m=M+1), m1bits)], axis=0)
 
     # mcounts = np.zeros(2**16)
     # m1counts = np.zeros(2**16)
@@ -86,7 +87,7 @@ def sliding_window(x, m):
         
     mblocks = np.packbits(
         np.lib.stride_tricks.as_strided(
-            x, (len(x), m), (1,1)
+            x.copy(), (len(x), m), (1,1)
         ), axis=1
     ).view(np.uint16).reshape(-1)
 
