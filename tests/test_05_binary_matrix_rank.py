@@ -21,8 +21,11 @@ def binary_matrix_rank_test(binary, M=32, Q=32):
     ranks = []
 
     # parallelize an already vectorized operation, 16 is a good number why not
-    with mp.Pool(mp.cpu_count()) as p:
-        ranks = np.hstack([*p.imap(gf2_rank, np.array_split(repacked, mp.cpu_count() * 16))])
+    if binary.n > 10_000_000:
+        with mp.Pool(mp.cpu_count()) as p:
+            ranks = np.hstack([*p.imap(gf2_rank, np.array_split(repacked, mp.cpu_count() * 16))])
+    else:
+        ranks = gf2_rank(repacked.copy())
 
     # number of matrices with rank == M, M-1, and otherwise
     FM = ranks.tolist().count(M)

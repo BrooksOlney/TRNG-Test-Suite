@@ -18,18 +18,24 @@ def approximate_entropy_test(binary):
     m1bits = np.concatenate([bits, bits[:M]])
 
     bitsPerJob = 1_000_000
-
+    
     lm  = n + M
     lm1 = n + M + 1
     
     r = math.ceil(lm // bitsPerJob) 
     
-    mbits = [mbits[i*bitsPerJob : (i+1)*bitsPerJob + M - 1] for i in range(r)]
-    m1bits = [m1bits[i*bitsPerJob : (i+1)*bitsPerJob + M] for i in range(r)]
+    if r > mp.cpu_count():
 
-    with mp.Pool(mp.cpu_count()) as p:
-        mcounts = np.sum([*p.imap(partial(sliding_window, m=M), mbits)], axis=0)
-        m1counts = np.sum([*p.imap(partial(sliding_window, m=M+1), m1bits)], axis=0)
+        mbits = [mbits[i*bitsPerJob : (i+1)*bitsPerJob + M - 1] for i in range(r)]
+        m1bits = [m1bits[i*bitsPerJob : (i+1)*bitsPerJob + M] for i in range(r)]
+
+        with mp.Pool(mp.cpu_count()) as p:
+            mcounts = np.sum([*p.imap(partial(sliding_window, m=M), mbits)], axis=0)
+            m1counts = np.sum([*p.imap(partial(sliding_window, m=M+1), m1bits)], axis=0)
+
+    else:
+        mcounts = sliding_window(mbits, M)
+        m1counts = sliding_window(m1bits, M+1)
 
     mcounts[mcounts == 0] = 1
     m1counts[m1counts == 0] = 1

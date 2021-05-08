@@ -18,14 +18,22 @@ def serial_test(binary):
 
     psisqs = []
     
-    with mp.Pool(mp.cpu_count()) as p:
+    if r > mp.cpu_count():
+        with mp.Pool(mp.cpu_count()) as p:
+            for j in range(3):
+                m = M - j
+                _bits = np.concatenate([bits, bits[:m - 1]])
+                _bits = [bits[i*bitsPerJob : (i+1)*bitsPerJob + m] for i in range(r)]
 
+                mcounts = np.sum([*p.imap(partial(sliding_window, m=m), _bits)], axis=0)
+            
+                psisq = ((2**(M-j)) / n) * sum(mcounts**2) - n
+                psisqs.append(psisq)
+    else:
         for j in range(3):
             m = M - j
-            _bits = np.concatenate([bits, bits[:m - 1]])
-            _bits = [bits[i*bitsPerJob : (i+1)*bitsPerJob + m] for i in range(r)]
 
-            mcounts = np.sum([*p.imap(partial(sliding_window, m=m), _bits)], axis=0)
+            mcounts = sliding_window(bits, m)
         
             psisq = ((2**(M-j)) / n) * sum(mcounts**2) - n
             psisqs.append(psisq)

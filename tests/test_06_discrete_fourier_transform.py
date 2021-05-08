@@ -16,7 +16,7 @@ def discrete_fourier_transform_test(binary, m=1):
     blockSize = binary.n // m
     blocks = bits.reshape(m, blockSize)
     T = math.sqrt(math.log(1.0/0.05)*blockSize)
-
+    
     with mp.Pool(mp.cpu_count()) as p:
         s = p.map(vectorized_fft, blocks)
 

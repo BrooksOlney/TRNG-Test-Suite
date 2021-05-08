@@ -23,9 +23,14 @@ def linear_complexity_test(binary, M=512, K=6):
     # Ls = [*map(berlekamp_massey_opt, blocks)]
     # test = np.array_split(blocks, 1000)
 
-    with mp.Pool(nJobs) as p:
-        Ls = np.hstack([*p.imap(vectorized_berlekamp_massey, np.array_split(blocks, 1000))])
+
     
+    if len(blocks) // 1000 > nJobs:
+        with mp.Pool(nJobs) as p:
+            Ls = np.hstack([*p.imap(vectorized_berlekamp_massey, np.array_split(blocks, 1000))])
+    else:
+        Ls = vectorized_berlekamp_massey(blocks)
+
     # compute expected average and test statistic for each block
     mu = (M / 2) + ((9 + ((-1)**(M+1)))/36) - (((M/3) + (2/9)) / (2**M))
     Ts = np.array([((-1)**(M)) * (Li - mu) + (2/9) for Li in Ls]) * -1

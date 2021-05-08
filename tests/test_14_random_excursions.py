@@ -18,7 +18,7 @@ def random_excursion_test(binary):
     bits = binary.unpacked.astype(np.int8)
     bits = 2*bits - 1
 
-    s = bits.cumsum(dtype=np.int32)
+    s = np.add.accumulate(bits, dtype=np.int32)
     s = np.pad(s, (1, 1), 'constant')
     zcrosses = np.where(s == 0)[0]
 
