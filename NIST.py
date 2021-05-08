@@ -107,8 +107,8 @@ def main():
     # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\data\e.txt',bits=1_000_000)
     # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\data\data\data.pi',bits=1_000_000)
     start = time.time()
-    # print(nist.run_nist_tests())
-    print(overlapping_template_matching_test(nist.binary))
+    print(nist.run_nist_tests())
+    # print(frequency_within_block_test(nist.binary))
     print(time.time() - start)
 
 

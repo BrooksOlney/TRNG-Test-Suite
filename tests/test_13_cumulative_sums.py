@@ -13,6 +13,7 @@ def cumulative_sums_test(binary, mode=0):
         of that cumulative sum for random sequences.  This cumulative sum may be considered as a random walk.
     """
     def compute_psummation_func(k, i1, i2):
+    
         t1 = ((4*k + i1) * z) / math.sqrt(binary.n)
         t2 = ((4*k + i2) * z) / math.sqrt(binary.n)
 
