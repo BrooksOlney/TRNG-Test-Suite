@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.stats import norm
 import math
+from functools import partial
+import multiprocessing as mp
 
 def cumulative_sums_test(binary, mode=0):
     """ The focus of this test is the maximal excursion (from zero) of the random walk defined 
@@ -11,7 +13,6 @@ def cumulative_sums_test(binary, mode=0):
         of that cumulative sum for random sequences.  This cumulative sum may be considered as a random walk.
     """
     def compute_psummation_func(k, i1, i2):
-    
         t1 = ((4*k + i1) * z) / math.sqrt(binary.n)
         t2 = ((4*k + i2) * z) / math.sqrt(binary.n)
 
@@ -20,6 +21,13 @@ def cumulative_sums_test(binary, mode=0):
     # convert to binary then to -1/1 for this test
     bits = 2*binary.unpacked.astype(np.int8) - 1
     n = binary.n
+
+    # bitsPerBatch = 1_000_000
+    # r = math.ceil(len(bits) // bitsPerBatch)
+    # bits = [[bits[i*bitsPerBatch : (i+1)*bitsPerBatch]] for i in range(r)]
+
+    # with mp.Pool(mp.cpu_count()) as p:
+    #     z = np.max([*p.imap(batched_cumsum, bits)])
 
     # compute cumulative sums - may require large amount of memory/time
     css = bits.cumsum(dtype=np.int32)
@@ -41,4 +49,9 @@ def cumulative_sums_test(binary, mode=0):
 
     return [p, success]
 
-# def batched_cumsum(bits):
+def batched_cumsum(bits):
+
+
+    css = np.array([np.cumsum(bits, dtype=np.int32)])
+    return np.max(np.abs(css))
+

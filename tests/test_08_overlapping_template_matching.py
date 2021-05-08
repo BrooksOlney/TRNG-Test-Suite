@@ -43,5 +43,5 @@ def overlapping_template_matching_test(binary, m=9, K=5):
         return [p, success]
 
 def overlapping_matches(block, m, template):
-    strides = np.packbits(np.lib.stride_tricks.as_strided(block, shape=((block.size - m + 1), m), strides=(1,1)), axis=1).view(np.uint16).reshape(-1)
+    strides = np.packbits(np.lib.stride_tricks.as_strided(block, shape=((block.size - m + 1), m), strides=(blockl.itemsize,block.itemsize)), axis=1).view(np.uint16).reshape(-1)
     return np.count_nonzero(strides == template)
