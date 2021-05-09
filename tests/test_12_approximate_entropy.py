@@ -2,6 +2,7 @@ import numpy as np
 import math
 import scipy.special as ss
 import multiprocessing as mp
+from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
 
 def approximate_entropy_test(binary):
@@ -29,7 +30,7 @@ def approximate_entropy_test(binary):
         mbits = [mbits[i*bitsPerJob : (i+1)*bitsPerJob + M - 1] for i in range(r)]
         m1bits = [m1bits[i*bitsPerJob : (i+1)*bitsPerJob + M] for i in range(r)]
 
-        with mp.Pool(mp.cpu_count()) as p:
+        with ThreadPool(mp.cpu_count()) as p:
             mcounts = np.sum([*p.imap(partial(sliding_window, m=M), mbits)], axis=0)
             m1counts = np.sum([*p.imap(partial(sliding_window, m=M+1), m1bits)], axis=0)
 

@@ -3,6 +3,7 @@ import scipy.special as ss
 import multiprocessing as mp
 import math
 from functools import partial
+from multiprocessing.dummy import Pool as ThreadPool
 
 def serial_test(binary):
     """ The focus of this test is the frequency of all possible overlapping m-bit
@@ -19,7 +20,7 @@ def serial_test(binary):
     psisqs = []
     
     if r > mp.cpu_count():
-        with mp.Pool(mp.cpu_count()) as p:
+        with ThreadPool(mp.cpu_count()) as p:
             for j in range(3):
                 m = M - j
                 _bits = np.concatenate([bits, bits[:m - 1]])

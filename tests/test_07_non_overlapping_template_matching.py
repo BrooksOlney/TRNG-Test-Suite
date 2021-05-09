@@ -1,7 +1,8 @@
 import numpy as np
+from multiprocessing.dummy import Pool as ThreadPool
 import multiprocessing as mp
 import scipy.special as ss
-import itertools as it
+from functools import partial
 
 def non_overlapping_template_matching_test(binary, B=1, m=9):
     
@@ -28,8 +29,8 @@ def non_overlapping_template_matching_test(binary, B=1, m=9):
     template = np.packbits(template).view(np.uint16)
 
     if n > 10_000_000:
-        with mp.Pool(mp.cpu_count()) as p:
-            matches = np.array(p.starmap(non_overlapping_matches, zip(blocks, it.repeat(m), it.repeat(template))))
+        with ThreadPool(mp.cpu_count()) as p:
+            matches = np.array([*p.imap(partial(non_overlapping_matches, m=m, template=template), blocks)])
     else:
         matches = np.array([template_matches(block, template) for block in blocks])
 

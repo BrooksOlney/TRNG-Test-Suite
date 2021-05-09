@@ -1,5 +1,6 @@
 import numpy as np
 import multiprocessing as mp
+from multiprocessing.dummy import Pool as ThreadPool
 import scipy.fft as fft
 import scipy.special as ss
 from scipy.stats import chisquare
@@ -17,7 +18,7 @@ def discrete_fourier_transform_test(binary, m=1):
     blocks = bits.reshape(m, blockSize)
     T = math.sqrt(math.log(1.0/0.05)*blockSize)
     
-    with mp.Pool(mp.cpu_count()) as p:
+    with ThreadPool(mp.cpu_count()) as p:
         s = p.map(vectorized_fft, blocks)
 
     N0 = 0.95 * blockSize / 2.0

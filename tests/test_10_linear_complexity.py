@@ -1,5 +1,6 @@
 import numpy as np
 import multiprocessing as mp
+from multiprocessing.dummy import Pool as ThreadPool
 import scipy.special as ss
 
 def init_pool(data):
@@ -21,8 +22,8 @@ def linear_complexity_test(binary, M=512, K=6):
     nJobs = mp.cpu_count()
 
     if len(blocks) // 1000 > nJobs:
-        with mp.Pool(nJobs) as p:
-            Ls = np.hstack([*p.imap(vectorized_berlekamp_massey, np.array_split(blocks, 1000))])
+        with ThreadPool(nJobs) as p:
+            Ls = np.hstack([*p.imap(vectorized_berlekamp_massey, np.array_split(blocks, nJobs))])
     else:
         Ls = vectorized_berlekamp_massey(blocks)
 

@@ -1,5 +1,6 @@
 import numpy as np
 import multiprocessing as mp
+from multiprocessing.dummy import Pool as ThreadPool
 
 
 def binary_matrix_rank_test(binary, M=32, Q=32):
@@ -22,8 +23,8 @@ def binary_matrix_rank_test(binary, M=32, Q=32):
 
     # parallelize an already vectorized operation, 16 is a good number why not
     if binary.n > 10_000_000:
-        with mp.Pool(mp.cpu_count()) as p:
-            ranks = np.hstack([*p.imap(gf2_rank, np.array_split(repacked, mp.cpu_count() * 16))])
+        with ThreadPool(mp.cpu_count()) as p:
+            ranks = np.hstack([*p.imap(gf2_rank, np.array_split(repacked.copy(), mp.cpu_count() ))])
     else:
         ranks = gf2_rank(repacked.copy())
 
