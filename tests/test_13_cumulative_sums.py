@@ -20,7 +20,7 @@ def cumulative_sums_test(binary, mode=0):
         return norm.cdf(t1) - norm.cdf(t2)
 
     # convert to binary then to -1/1 for this test
-    bits = 2*binary.unpacked.astype(np.int8) - 1
+    bits = 2*binary.unpacked.astype(np.int16) - 1
     n = binary.n
 
     # bitsPerBatch = 1_000_000
@@ -31,7 +31,7 @@ def cumulative_sums_test(binary, mode=0):
     #     z = np.max([*p.imap(batched_cumsum, bits)])
 
     # compute cumulative sums - may require large amount of memory/time
-    css = bits.cumsum(dtype=np.int32)
+    css = np.add.accumulate(bits, dtype=np.int16)
 
     z = np.max(np.abs(css))
 

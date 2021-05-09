@@ -5,8 +5,7 @@ def longest_run_within_block_test(binary, KM=0):
     """
         Like longest run test, but within blocks of the binary string.
     """
-    def longest_run_in_block(a):
-        x = int.from_bytes(np.packbits(a).tobytes(), byteorder='big')
+    def longest_run_in_block(x):
 
         count = 0
         while x:
@@ -48,7 +47,9 @@ def longest_run_within_block_test(binary, KM=0):
     numBlocks = len(bits) // M
 
     bits = bits[:numBlocks * M].reshape(numBlocks, M)
-    runs = np.apply_along_axis(longest_run_in_block, 1, bits)
+    repacked = np.packbits(bits, axis=1)
+    blocks = np.array([int.from_bytes(b.tobytes(), 'big') for b in repacked])
+    runs = np.array([longest_run_in_block(x) for x in blocks])
 
     # compute the frequency of lengths based on the monitored classes
     freqs = np.histogram(runs, bins=[-9e10,*vclasses, 9e10])[0]

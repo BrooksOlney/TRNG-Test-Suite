@@ -1,1 +1,3 @@
 # TRNG-Test-Suite
+
+This repository contains a python implementation of the NIST Statistical Testing Suite for testing True Random Number Generators (TRNGs). The underlying algorithms of each of the 15 statistical tests have been heavily optimized with Numpy, a bit of multiprocessing and some bit-twiddling magic here and there. There are a number of implementations of this suite available, including several others in Python. You may find those easier to read if you are looking to understand the algorithms themselves. However, they are largely ineffiient when working with large bitstreams (> 1 million bits). This implementation has been evaluated and tested with bitstreams of over 1 billion bits -- taking a little over a minute to process all 15 tests.

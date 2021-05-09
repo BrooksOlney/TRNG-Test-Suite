@@ -15,10 +15,10 @@ def random_excursion_test(binary):
 
         return pi
 
-    bits = binary.unpacked.astype(np.int8)
+    bits = binary.unpacked.astype(np.int16)
     bits = 2*bits - 1
 
-    s = np.add.accumulate(bits, dtype=np.int32)
+    s = np.add.accumulate(bits, dtype=np.int16)
     s = np.pad(s, (1, 1), 'constant')
     zcrosses = np.where(s == 0)[0]
 
