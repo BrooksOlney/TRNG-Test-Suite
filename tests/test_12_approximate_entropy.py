@@ -25,18 +25,18 @@ def approximate_entropy_test(binary):
     
     r = math.ceil(lm // bitsPerJob) 
     
-    if r > mp.cpu_count():
+    # if r > mp.cpu_count():
 
-        mbits = [mbits[i*bitsPerJob : (i+1)*bitsPerJob + M - 1] for i in range(r)]
-        m1bits = [m1bits[i*bitsPerJob : (i+1)*bitsPerJob + M] for i in range(r)]
+    #     mbits = [mbits[i*bitsPerJob : (i+1)*bitsPerJob + M - 1] for i in range(r)]
+    #     m1bits = [m1bits[i*bitsPerJob : (i+1)*bitsPerJob + M] for i in range(r)]
 
-        with ThreadPool(mp.cpu_count()) as p:
-            mcounts = np.sum([*p.imap(partial(sliding_window, m=M), mbits)], axis=0)
-            m1counts = np.sum([*p.imap(partial(sliding_window, m=M+1), m1bits)], axis=0)
+    #     with ThreadPool(mp.cpu_count()) as p:
+    #         mcounts = np.sum([*p.imap(partial(sliding_window, m=M), mbits)], axis=0)
+    #         m1counts = np.sum([*p.imap(partial(sliding_window, m=M+1), m1bits)], axis=0)
 
-    else:
-        mcounts = sliding_window(mbits, M)
-        m1counts = sliding_window(m1bits, M+1)
+    # else:
+    mcounts = sliding_window(mbits, M)
+    m1counts = sliding_window(m1bits, M+1)
 
     mcounts[mcounts == 0] = 1
     m1counts[m1counts == 0] = 1
@@ -53,11 +53,13 @@ def approximate_entropy_test(binary):
     return [p, success]
 
 
-def sliding_window(x, m):
     
+def sliding_window(x, m):
     micounts = np.zeros(2**(16))
-    s1 = np.lib.stride_tricks.as_strided(x, (len(x) - m + 1, m), (x.itemsize, x.itemsize))
-    mblocks = np.packbits(s1, axis=1).view(np.uint16).reshape(-1)
+    # s1 = np.lib.stride_tricks.as_strided(x, (len(x) - m + 1, m), (x.itemsize, x.itemsize))
+    strides = np.lib.stride_tricks.sliding_window_view(x, window_shape=m)
+    
+    mblocks = np.packbits(strides, axis=1).view(np.uint16).reshape(-1)
     counts = np.bincount(mblocks)
     micounts[range(counts.size)] += counts
 

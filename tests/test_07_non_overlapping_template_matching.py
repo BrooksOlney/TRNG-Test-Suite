@@ -45,7 +45,6 @@ def non_overlapping_template_matching_test(binary, B=1, m=9):
     # with mp.Pool(mp.cpu_count()) as p:
     #     matches = np.array([*p.imap(partial(non_overlapping_matches, m=m, template=template), blocks)])
 
-    print(matches)
     mu = (M - m + 1) / (2**m)
     std = M * ((1/(2**m))- (2*m-1)/(2**(2*m)))
     

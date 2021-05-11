@@ -54,7 +54,7 @@ def sliding_window(x, m):
     micounts = np.zeros(2**(16))
     # s1 = np.lib.stride_tricks.as_strided(x, (len(x) - m + 1, m), (x.itemsize, x.itemsize))
     strides = np.lib.stride_tricks.sliding_window_view(x, window_shape=m)
-
+    
     mblocks = np.packbits(strides, axis=1).view(np.uint16).reshape(-1)
     counts = np.bincount(mblocks)
     micounts[range(counts.size)] += counts
