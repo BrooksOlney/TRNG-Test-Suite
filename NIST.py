@@ -8,6 +8,7 @@ import scipy.fft as fft
 from scipy.stats import chisquare
 import multiprocessing as mp
 import ctypes
+import copy
 from multiprocessing import shared_memory
 from concurrent.futures import ProcessPoolExecutor
 import itertools as it
@@ -93,7 +94,7 @@ class TRNGtester:
         for func in nistFuncs:
             start = time.time()
             print("Starting: {}".format(func.__name__))
-            ret = func(self.binary)
+            ret = func(copy.deepcopy(self.binary))
             end = time.time() - start
             print("\t\tResults (p-value(s), Pass/Fail) = \n\t\t\t{}".format(ret))
             print("Test completed in {}s".format(end))
@@ -103,17 +104,18 @@ class TRNGtester:
 def main():
     # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\robert-data')
     # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\data\random-data', bits=1_000_000_000)
-    nist = TRNGtester(r'/home/brooks/Repos/TRNG-Test-Suite/1b', bits=1_000_000_000)
+    # nist = TRNGtester(r'/home/brooks/Repos/TRNG-Test-Suite/1b')
 
     # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\2010-01-01.bin')
-    # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\data\e.txt',bits=1_000_000)
+    nist = TRNGtester(r'/home/brooks/Repos/TRNG-Test-Suite/data/data.e', bits=1_000_000, binformat='txt')
     # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\data\data\data.pi',bits=1_000_000)
     start = time.time()
-    print(nist.run_nist_tests())
-    # print(linear_complexity_test(nist.binary))
+    # print(nist.run_nist_tests())
+    print(serial_test(nist.binary))
+
     print(time.time() - start)
 
 
 if __name__ == "__main__":
-    mp.freeze_support()
+    # mp.freeze_support()
     main()

@@ -22,12 +22,13 @@ def overlapping_template_matching_test(binary, m=9, K=5):
         template = np.ones(m, dtype=np.uint8)
         template = np.packbits(template).view(np.uint16)
         
-        if n > 10_000_000:
-            with ThreadPool(mp.cpu_count()) as p:
-                matches = np.array([*p.imap(partial(overlapping_matches, m=m, template=template), blocks)])
-        else:
-            matches = np.array([overlapping_matches(block, m, template) for block in blocks])
-        # matches = np.array([template_matches(block) for block in blocks])
+        # if n > 10_000_000:
+        #     with ThreadPool(mp.cpu_count()) as p:
+        #         matches = np.array([*p.imap(partial(overlapping_matches, m=m, template=template), blocks)])
+        # else:
+        #     matches = np.array([overlapping_matches(block, m, template) for block in blocks])
+        # matches = np.array([overlapping_matches(block, m, template) for block in blocks])
+        matches = overlapping_matches(blocks, m, template)
         lmbda = (M-m+1)/(2**m)
         nu = lmbda/2
 
@@ -46,5 +47,6 @@ def overlapping_template_matching_test(binary, m=9, K=5):
         return [p, success]
 
 def overlapping_matches(block, m, template):
-    strides = np.packbits(np.lib.stride_tricks.as_strided(block, shape=((block.size - m + 1), m), strides=(block.itemsize,block.itemsize)), axis=1).view(np.uint16).reshape(-1)
-    return np.count_nonzero(strides == template)
+    strides = np.lib.stride_tricks.sliding_window_view(block, window_shape=m, axis=1)
+    repacked = np.packbits(strides, axis=2).view(np.uint16).reshape(block.shape[0], -1)
+    return np.count_nonzero(repacked == template, axis=1)

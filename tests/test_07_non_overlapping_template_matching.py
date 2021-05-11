@@ -3,6 +3,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 import multiprocessing as mp
 import scipy.special as ss
 from functools import partial
+import math
 
 def non_overlapping_template_matching_test(binary, B=1, m=9):
     
@@ -28,12 +29,23 @@ def non_overlapping_template_matching_test(binary, B=1, m=9):
 
     template = np.packbits(template).view(np.uint16)
 
-    if n > 10_000_000:
-        with ThreadPool(mp.cpu_count()) as p:
-            matches = np.array([*p.imap(partial(non_overlapping_matches, m=m, template=template), blocks)])
-    else:
-        matches = np.array([template_matches(block, template) for block in blocks])
+    # if n > 10_000_000:
+    #     with ThreadPool(mp.cpu_count()) as p:
+    #         matches = np.array([*p.imap(partial(non_overlapping_matches, m=m, template=template), blocks)])
+    # else:
+    #     matches = np.array([template_matches(block, template) for block in blocks])
 
+    bpb = 1_000_000
+    r = math.ceil(n // bpb)
+
+    # blocks = [blocks[i*bpb : (i+1)*bpb + m - 1] for i in range(r)]
+    
+    matches = non_overlapping_matches(blocks, m, template)
+
+    # with mp.Pool(mp.cpu_count()) as p:
+    #     matches = np.array([*p.imap(partial(non_overlapping_matches, m=m, template=template), blocks)])
+
+    print(matches)
     mu = (M - m + 1) / (2**m)
     std = M * ((1/(2**m))- (2*m-1)/(2**(2*m)))
     
@@ -46,8 +58,14 @@ def non_overlapping_template_matching_test(binary, B=1, m=9):
     return [p, success]
 
 def non_overlapping_matches(block, m, template):
-    strides = np.packbits(np.lib.stride_tricks.as_strided(block, shape=((block.size - m + 1), m), strides=(block.itemsize,block.itemsize)), axis=1).view(np.uint16).reshape(-1)
-    inds    = np.where(strides == template)[0]
-    dists   = np.diff(inds)
+    strides = np.lib.stride_tricks.sliding_window_view(block, window_shape=m, axis=1)
+    repacked = np.packbits(strides,axis=2).view(np.uint16).reshape(block.shape[0], -1)
 
-    return len(inds) - np.count_nonzero(dists < m)
+    inds  = [np.where(repacked[i] == template)[0] for i in range(len(repacked))]
+    dists = [np.diff(ind) for ind in inds]
+
+    lens = np.array([b.shape[0] for b in inds])
+    
+    overlaps = np.array([np.count_nonzero(b < m) for b in dists])
+
+    return lens - overlaps

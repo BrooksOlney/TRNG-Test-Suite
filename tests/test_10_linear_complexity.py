@@ -22,8 +22,8 @@ def linear_complexity_test(binary, M=512, K=6):
     nJobs = mp.cpu_count()
 
     if len(blocks) // 1000 > nJobs:
-        with ThreadPool(nJobs) as p:
-            Ls = np.hstack([*p.imap(vectorized_berlekamp_massey, np.array_split(blocks, nJobs))])
+        with mp.Pool(nJobs) as p:
+            Ls = np.hstack([*p.imap(vectorized_berlekamp_massey, np.array_split(blocks, nJobs * 1000))])
     else:
         Ls = vectorized_berlekamp_massey(blocks)
 

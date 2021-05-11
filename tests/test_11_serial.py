@@ -14,30 +14,30 @@ def serial_test(binary):
     bits = binary.unpacked
     n = binary.n
     M = 16
-    bitsPerJob = 1_000_000
-    r = math.ceil((n + M) // bitsPerJob) 
+    # bitsPerJob = 1_000_000
+    # r = math.ceil((n + M) // bitsPerJob) 
 
     psisqs = []
     
-    if r > mp.cpu_count():
-        with ThreadPool(mp.cpu_count()) as p:
-            for j in range(3):
-                m = M - j
-                _bits = np.concatenate([bits, bits[:m - 1]])
-                _bits = [bits[i*bitsPerJob : (i+1)*bitsPerJob + m] for i in range(r)]
+    # if r > mp.cpu_count():
+    #     with ThreadPool(mp.cpu_count()) as p:
+    #         for j in range(3):
+    #             m = M - j
+    #             _bits = np.concatenate([bits, bits[:m - 1]])
+    #             _bits = [bits[i*bitsPerJob : (i+1)*bitsPerJob + m] for i in range(r)]
 
-                mcounts = np.sum([*p.imap(partial(sliding_window, m=m), _bits)], axis=0)
+    #             mcounts = np.sum([*p.imap(partial(sliding_window, m=m), _bits)], axis=0)
             
-                psisq = ((2**(M-j)) / n) * sum(mcounts**2) - n
-                psisqs.append(psisq)
-    else:
-        for j in range(3):
-            m = M - j
+    #             psisq = ((2**(M-j)) / n) * sum(mcounts**2) - n
+    #             psisqs.append(psisq)
+    # else:
+    for j in range(3):
+        m = M - j
 
-            mcounts = sliding_window(bits, m)
-        
-            psisq = ((2**(M-j)) / n) * sum(mcounts**2) - n
-            psisqs.append(psisq)
+        mcounts = sliding_window(bits, m)
+    
+        psisq = ((2**(M-j)) / n) * sum(mcounts**2) - n
+        psisqs.append(psisq)
 
     dpsi  = psisqs[0] - psisqs[1]
     d2psi = psisqs[0] - 2*psisqs[1] + psisqs[2]
@@ -52,8 +52,10 @@ def serial_test(binary):
 
 def sliding_window(x, m):
     micounts = np.zeros(2**(16))
-    s1 = np.lib.stride_tricks.as_strided(x, (len(x) - m + 1, m), (x.itemsize, x.itemsize))
-    mblocks = np.packbits(s1, axis=1).view(np.uint16).reshape(-1)
+    # s1 = np.lib.stride_tricks.as_strided(x, (len(x) - m + 1, m), (x.itemsize, x.itemsize))
+    strides = np.lib.stride_tricks.sliding_window_view(x, window_shape=m)
+
+    mblocks = np.packbits(strides, axis=1).view(np.uint16).reshape(-1)
     counts = np.bincount(mblocks)
     micounts[range(counts.size)] += counts
 
