@@ -27,8 +27,9 @@ def non_overlapping_template_matching_test(binary, B=1, m=9):
     elif len(template) < m:
         template = np.concatenate([np.zeros((m - len(template)), dtype=np.uint8), template])
 
-    template = np.packbits(template).view(np.uint16)
-
+    
+    template = np.dot(template, 1 << np.arange(m, dtype=np.uint16)[::-1])
+    print(template)
     # if n > 10_000_000:
     #     with ThreadPool(mp.cpu_count()) as p:
     #         matches = np.array([*p.imap(partial(non_overlapping_matches, m=m, template=template), blocks)])
@@ -58,7 +59,10 @@ def non_overlapping_template_matching_test(binary, B=1, m=9):
 
 def non_overlapping_matches(block, m, template):
     strides = np.lib.stride_tricks.sliding_window_view(block, window_shape=m, axis=1)
-    repacked = np.packbits(strides,axis=2).view(np.uint16).reshape(block.shape[0], -1)
+    mask = np.array(1 << np.arange(m), dtype=np.uint16)[::-1]
+    repacked = np.array([s @ mask for s in strides])
+
+    # repacked = np.packbits(strides,axis=2).view(np.uint16).reshape(block.shape[0], -1)
 
     inds  = [np.where(repacked[i] == template)[0] for i in range(len(repacked))]
     dists = [np.diff(ind) for ind in inds]

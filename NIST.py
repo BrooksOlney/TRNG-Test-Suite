@@ -110,8 +110,8 @@ def main():
     # nist = TRNGtester(r'/home/brooks/Repos/TRNG-Test-Suite/data/data.e', bits=1_000_000, binformat='txt')
     # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\data\data\data.pi',bits=1_000_000)
     start = time.time()
-    print(nist.run_nist_tests())
-    # print(serial_test(nist.binary))
+    # print(nist.run_nist_tests())
+    print(linear_complexity_test(nist.binary))
 
     print(time.time() - start)
 

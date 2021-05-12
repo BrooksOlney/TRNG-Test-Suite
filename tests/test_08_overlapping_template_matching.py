@@ -20,7 +20,7 @@ def overlapping_template_matching_test(binary, m=9, K=5):
         blocks = bits[:N*M].reshape(N,M)
 
         template = np.ones(m, dtype=np.uint8)
-        template = np.packbits(template).view(np.uint16)
+        template = np.dot(template, 1 << np.arange(m, dtype=np.uint16)[::-1])
         
         # if n > 10_000_000:
         #     with ThreadPool(mp.cpu_count()) as p:
@@ -48,5 +48,9 @@ def overlapping_template_matching_test(binary, m=9, K=5):
 
 def overlapping_matches(block, m, template):
     strides = np.lib.stride_tricks.sliding_window_view(block, window_shape=m, axis=1)
-    repacked = np.packbits(strides, axis=2).view(np.uint16).reshape(block.shape[0], -1)
+    mask = np.array(1 << np.arange(m), dtype=np.uint16)[::-1]
+
+    repacked = np.array([s @ mask for s in strides])
+
+    # repacked = np.packbits(strides, axis=2).view(np.uint16).reshape(block.shape[0], -1)
     return np.count_nonzero(repacked == template, axis=1)

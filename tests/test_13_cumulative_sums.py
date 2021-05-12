@@ -27,14 +27,11 @@ def cumulative_sums_test(binary, mode=0):
     z = np.max(np.abs(css))
 
     # ranges for summations in computing p-value
-    s1range = range(int(((-n/z)+1)/4), int(((n/z)-1)/4))
-    s2range = range(int(((-n/z)-3)/4), int(((n/z)-1)/4))
+    s1range = np.array([*range(int(((-n/z)+1)/4), int(((n/z)-1)/4))])
+    s2range = np.array([*range(int(((-n/z)-3)/4), int(((n/z)-1)/4))])
 
-    s1, s2 = 0, 0
-    for k in s1range:
-        s1 += compute_psummation_func(k, +1, -1)
-    for k in s2range:
-        s2 += compute_psummation_func(k, +3, +1)
+    s1 = np.sum(compute_psummation_func(s1range, +1, -1))
+    s2 = np.sum(compute_psummation_func(s2range, +3, +1))
 
     p = 1 - s1 + s2
     success = (p >= 0.01)

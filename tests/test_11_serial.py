@@ -14,23 +14,9 @@ def serial_test(binary):
     bits = binary.unpacked
     n = binary.n
     M = 16
-    # bitsPerJob = 1_000_000
-    # r = math.ceil((n + M) // bitsPerJob) 
 
     psisqs = []
-    
-    # if r > mp.cpu_count():
-    #     with ThreadPool(mp.cpu_count()) as p:
-    #         for j in range(3):
-    #             m = M - j
-    #             _bits = np.concatenate([bits, bits[:m - 1]])
-    #             _bits = [bits[i*bitsPerJob : (i+1)*bitsPerJob + m] for i in range(r)]
 
-    #             mcounts = np.sum([*p.imap(partial(sliding_window, m=m), _bits)], axis=0)
-            
-    #             psisq = ((2**(M-j)) / n) * sum(mcounts**2) - n
-    #             psisqs.append(psisq)
-    # else:
     for j in range(3):
         m = M - j
 
@@ -52,11 +38,28 @@ def serial_test(binary):
 
 def sliding_window(x, m):
     micounts = np.zeros(2**(16))
-    # s1 = np.lib.stride_tricks.as_strided(x, (len(x) - m + 1, m), (x.itemsize, x.itemsize))
     strides = np.lib.stride_tricks.sliding_window_view(x, window_shape=m)
+    mask = np.array(1 << np.arange(m), dtype=np.uint16)[::-1]
     
-    mblocks = np.packbits(strides, axis=1).view(np.uint16).reshape(-1)
-    counts = np.bincount(mblocks)
-    micounts[range(counts.size)] += counts
+    strides = np.array_split(strides, math.ceil(len(strides) / 1_000_000))
+    
+    with ThreadPool(mp.cpu_count()) as p:
+        micounts = np.vstack([*p.imap(partial(convert_binary, mask=mask), strides)])    
 
+    # for s in np.array_split(strides, math.ceil(len(strides) / 1_000_000)):
+    #     repacked = s @ mask
+    #     count = np.bincount(repacked)
+    #     micounts[range(len(count))] += count
+
+    # mblocks = np.packbits(strides, axis=1).view(np.uint16).reshape(-1)
+    # counts = np.bincount(mblocks)
+    # micounts[range(counts.size)] += counts
+    # return micounts
+    return np.sum(micounts, axis=0)
+
+def convert_binary(x, mask):
+    repacked = x @ mask
+    micounts = np.zeros(2**(16))
+    counts = np.bincount(repacked)
+    micounts[range(counts.shape[0])] = counts
     return micounts
