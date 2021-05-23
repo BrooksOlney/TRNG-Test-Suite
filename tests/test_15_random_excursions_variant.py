@@ -3,10 +3,6 @@ import math
 
 def random_excursion_variant_test(binary):
     bits = 2*binary.unpacked.astype(np.int8)-1
-    bitsPerJob = 1_000_000
-
-    J = 0
-    s = np.arange(-9,10)
 
     s = np.add.accumulate(bits, dtype=np.int16)
     J = len(s[s==0]) + 1

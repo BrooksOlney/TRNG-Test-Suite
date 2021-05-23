@@ -23,7 +23,7 @@ def linear_complexity_test(binary, M=512, K=6):
 
     if len(blocks) // 1000 > nJobs:
         with mp.Pool(nJobs) as p:
-            Ls = np.hstack([*p.imap(vectorized_berlekamp_massey, np.array_split(blocks, nJobs * 100000))])
+            Ls = np.hstack([*p.imap(vectorized_berlekamp_massey, np.array_split(blocks, binary.n // 1_000_000))])
     else:
         Ls = vectorized_berlekamp_massey(blocks)
 

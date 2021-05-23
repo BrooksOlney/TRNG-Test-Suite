@@ -29,22 +29,14 @@ def non_overlapping_template_matching_test(binary, B=1, m=9):
 
     
     template = np.dot(template, 1 << np.arange(m, dtype=np.uint16)[::-1])
-    print(template)
+
     # if n > 10_000_000:
     #     with ThreadPool(mp.cpu_count()) as p:
     #         matches = np.array([*p.imap(partial(non_overlapping_matches, m=m, template=template), blocks)])
     # else:
     #     matches = np.array([template_matches(block, template) for block in blocks])
 
-    bpb = 1_000_000
-    r = math.ceil(n // bpb)
-
-    # blocks = [blocks[i*bpb : (i+1)*bpb + m - 1] for i in range(r)]
-    
     matches = non_overlapping_matches(blocks, m, template)
-
-    # with mp.Pool(mp.cpu_count()) as p:
-    #     matches = np.array([*p.imap(partial(non_overlapping_matches, m=m, template=template), blocks)])
 
     mu = (M - m + 1) / (2**m)
     std = M * ((1/(2**m))- (2*m-1)/(2**(2*m)))
@@ -64,8 +56,12 @@ def non_overlapping_matches(block, m, template):
 
     # repacked = np.packbits(strides,axis=2).view(np.uint16).reshape(block.shape[0], -1)
 
-    inds  = [np.where(repacked[i] == template)[0] for i in range(len(repacked))]
-    dists = [np.diff(ind) for ind in inds]
+    # inds  = [np.argwhere(repacked[i] == template) for i in range(len(repacked))]
+    # dists = [np.diff(ind) for ind in inds]
+
+    with ThreadPool(mp.cpu_count()) as p:
+        inds  = [*p.imap(np.argwhere, repacked == template)]
+        dists = [*p.imap(np.diff, inds)]
 
     lens = np.array([b.shape[0] for b in inds])
     

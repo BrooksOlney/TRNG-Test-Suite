@@ -103,15 +103,17 @@ class TRNGtester:
 
 def main():
     # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\robert-data')
-    # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\data\random-data', bits=1_000_000_000)
-    nist = TRNGtester(r'/home/brooks/Repos/TRNG-Test-Suite/1b')
+    nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\data\random-data', bits=160_000_000)
+    # nist = TRNGtester(r'/home/brooks/Repos/TRNG-Test-Suite/1b')
 
     # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\2010-01-01.bin')
     # nist = TRNGtester(r'/home/brooks/Repos/TRNG-Test-Suite/data/data.e', bits=1_000_000, binformat='txt')
-    # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\data\data\data.pi',bits=1_000_000)
+    # nist = TRNGtester(r'F:\Research\TRNG-Test-Suite\data\e.txt',bits=1_000_000)
     start = time.time()
     # print(nist.run_nist_tests())
-    print(linear_complexity_test(nist.binary))
+    # print(random_excursion_variant_test(nist.binary))
+    print(non_overlapping_template_matching_test(nist.binary))
+
 
     print(time.time() - start)
 
