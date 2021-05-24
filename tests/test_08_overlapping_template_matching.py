@@ -3,6 +3,7 @@ from multiprocessing.dummy import Pool as ThreadPool
 import multiprocessing as mp
 import scipy.special as ss
 from functools import partial
+from itertools import repeat
 
 def overlapping_template_matching_test(binary, m=9, K=5):
 
@@ -50,7 +51,11 @@ def overlapping_matches(block, m, template):
     strides = np.lib.stride_tricks.sliding_window_view(block, window_shape=m, axis=1)
     mask = np.array(1 << np.arange(m), dtype=np.uint16)[::-1]
 
-    repacked = np.array([s @ mask for s in strides])
+    # repacked = np.array([s @ mask for s in strides])
+    
+    # repacked = np.matmul(strides, mask)
+    with ThreadPool(mp.cpu_count()) as p:
+        repacked = np.array([*p.starmap(np.matmul, zip(strides, repeat(mask)))])
 
     # repacked = np.packbits(strides, axis=2).view(np.uint16).reshape(block.shape[0], -1)
     return np.count_nonzero(repacked == template, axis=1)

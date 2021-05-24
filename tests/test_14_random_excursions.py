@@ -20,10 +20,7 @@ def random_excursion_test(binary):
 
     s = np.add.accumulate(bits, dtype=np.int16)
     s = np.pad(s, (1, 1), 'constant')
-    zcrosses = np.where(s == 0)[0]
-
-    mi = np.min(s)
-    ma = np.max(s)
+    zcrosses = np.argwhere(s == 0).reshape(-1)
 
     states = np.zeros((9, 6), dtype=np.int16)
     for i in range(len(zcrosses) - 1):

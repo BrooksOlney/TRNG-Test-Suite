@@ -52,18 +52,15 @@ def non_overlapping_template_matching_test(binary, B=1, m=9):
 def non_overlapping_matches(block, m, template):
     strides = np.lib.stride_tricks.sliding_window_view(block, window_shape=m, axis=1)
     mask = np.array(1 << np.arange(m), dtype=np.uint16)[::-1]
-    repacked = np.array([s @ mask for s in strides])
-
-    # repacked = np.packbits(strides,axis=2).view(np.uint16).reshape(block.shape[0], -1)
-
-    # inds  = [np.argwhere(repacked[i] == template) for i in range(len(repacked))]
-    # dists = [np.diff(ind) for ind in inds]
 
     with ThreadPool(mp.cpu_count()) as p:
-        inds  = [*p.imap(np.argwhere, repacked == template)]
-        dists = [*p.imap(np.diff, inds)]
+        repacked = [*p.imap(partial(np.dot, b=mask), strides)]
+        inds     = [*p.imap(np.argwhere, repacked == template)]
+        dists    = [*p.imap(np.diff, inds)]
+        lens     = [*p.imap(len, inds)]
+        # overlaps = [*p.imap(np.count_nonzero,)]
 
-    lens = np.array([b.shape[0] for b in inds])
+    # lens = np.array([b.shape[0] for b in inds])
     
     overlaps = np.array([np.count_nonzero(b < m) for b in dists])
 

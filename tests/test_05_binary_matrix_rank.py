@@ -24,7 +24,7 @@ def binary_matrix_rank_test(binary, M=32, Q=32):
     # parallelize an already vectorized operation, 16 is a good number why not
     if binary.n > 10_000_000:
         with ThreadPool(mp.cpu_count()) as p:
-            ranks = np.hstack([*p.imap(gf2_rank, np.array_split(repacked.copy(), mp.cpu_count()))])
+            ranks = np.hstack([*p.imap(gf2_rank, np.array_split(repacked.copy(), binary.n // 1_000_000))])
     else:
         ranks = gf2_rank(repacked.copy())
 
