@@ -47,8 +47,12 @@ def maurers_universal_test(binary):
     # shr = shared_memory.SharedMemory(create=True, size=K if L <=8 else K*2)
     # testSeg = np.frombuffer(shr.buf, dtype=encoding)
 
-    initSeg = np.packbits(bits[:Q*L].reshape(Q,L), axis=1).view(encoding).reshape(Q)
-    testSeg = np.packbits(bits[Q*L:(K+Q)*L].reshape(K, L), axis=1).view(encoding).reshape(K)
+    # initSeg = np.packbits(bits[:Q*L].reshape(Q,L), axis=1).view(encoding).reshape(Q)
+    # testSeg = np.packbits(bits[Q*L:(K+Q)*L].reshape(K, L), axis=1).view(encoding).reshape(K)
+    mask = np.array(1 << np.arange(L), dtype=encoding)[::-1]
+
+    repacked = bits[:(Q+K)*L].reshape(-1,L) @ mask
+    initSeg, testSeg = repacked[:Q], repacked[Q:]
 
     qvals, qlast = np.unique(initSeg[::-1], return_index=True)
     qlast = Q - qlast
@@ -56,15 +60,12 @@ def maurers_universal_test(binary):
     qdict = np.zeros(2**(encoding(0).nbytes * 8),dtype=np.uint64)
     qdict[qvals] = qlast
     
-    kvals = np.unique(testSeg)
-    qinds = qdict[kvals]
-    
     idx = np.argsort(testSeg)
     res = np.split(idx, np.flatnonzero(np.diff(testSeg[idx])) + 1)
 
     largestBin = max(res, key=len)
     
-    paddedArr = np.array([np.hstack([(largestBin.size - len(arr) + 1) * [qinds[i]], arr + Q + 1]) for i,arr in enumerate(res)], dtype=np.uint32)
+    paddedArr = np.array([np.hstack([(largestBin.size - len(arr) + 1) * [qdict[i]], arr + Q + 1]) for i,arr in enumerate(res)], dtype=np.uint32)
 
     paddedArr = np.sort(paddedArr, axis=1)
     test = np.diff(paddedArr, axis=1)
