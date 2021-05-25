@@ -15,8 +15,7 @@ def random_excursion_test(binary):
 
         return pi
 
-    bits = binary.unpacked.astype(np.int16)
-    bits = 2*bits - 1
+    bits = 2*binary.unpacked.astype(np.int16) - 1
 
     s = np.add.accumulate(bits, dtype=np.int16)
     s = np.pad(s, (1, 1), 'constant')

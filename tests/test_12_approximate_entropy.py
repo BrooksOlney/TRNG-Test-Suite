@@ -4,6 +4,7 @@ import scipy.special as ss
 import multiprocessing as mp
 from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
+from itertools import repeat
 
 def approximate_entropy_test(binary):
     """ As with the Serial test, the focus of this test is the
@@ -36,7 +37,7 @@ def approximate_entropy_test(binary):
     return [p, success]
     
 def sliding_window(x, m):
-    micounts = np.zeros(2**(16))
+    micounts = np.zeros(2**(16), np.int64)
     # s1 = np.lib.stride_tricks.as_strided(x, (len(x) - m + 1, m), (x.itemsize, x.itemsize))
     strides = np.lib.stride_tricks.sliding_window_view(x, window_shape=m)
     mask = np.array(1 << np.arange(m), dtype=np.uint16)[::-1]
@@ -44,12 +45,12 @@ def sliding_window(x, m):
     strides = np.array_split(strides, math.ceil(len(strides) / 1_000_000))
 
     with ThreadPool(mp.cpu_count()) as p:
-        micounts = np.vstack([*p.imap(partial(convert_binary, mask=mask), strides)])
-    # for s in np.array_split(strides, math.ceil(len(strides) / 10_000_000)):
-    #     repacked = s @ mask
-    #     count = np.bincount(repacked)
-    #     micounts[range(len(count))] += count
-    return np.sum(micounts, axis=0)
+        repacked = [*p.starmap(np.matmul, zip(strides, repeat(mask)))]
+        counts = np.vstack([np.pad(c, [0, 2**16 - len(c)]) for c in p.imap(np.bincount, repacked)])
+        counts = np.sum(counts, axis=0)
+        micounts[range(len(counts))] += counts
+
+    return micounts
 
 def convert_binary(x, mask):
     repacked = x @ mask

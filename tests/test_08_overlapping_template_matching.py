@@ -1,9 +1,9 @@
-import numpy as np
 from multiprocessing.dummy import Pool as ThreadPool
+from itertools import repeat
+
+import numpy as np
 import multiprocessing as mp
 import scipy.special as ss
-from functools import partial
-from itertools import repeat
 
 def overlapping_template_matching_test(binary, m=9, K=5):
 
@@ -22,13 +22,7 @@ def overlapping_template_matching_test(binary, m=9, K=5):
 
         template = np.ones(m, dtype=np.uint8)
         template = np.dot(template, 1 << np.arange(m, dtype=np.uint16)[::-1])
-        
-        # if n > 10_000_000:
-        #     with ThreadPool(mp.cpu_count()) as p:
-        #         matches = np.array([*p.imap(partial(overlapping_matches, m=m, template=template), blocks)])
-        # else:
-        #     matches = np.array([overlapping_matches(block, m, template) for block in blocks])
-        # matches = np.array([overlapping_matches(block, m, template) for block in blocks])
+
         matches = overlapping_matches(blocks, m, template)
         lmbda = (M-m+1)/(2**m)
         nu = lmbda/2
@@ -51,11 +45,7 @@ def overlapping_matches(block, m, template):
     strides = np.lib.stride_tricks.sliding_window_view(block, window_shape=m, axis=1)
     mask = np.array(1 << np.arange(m), dtype=np.uint16)[::-1]
 
-    # repacked = np.array([s @ mask for s in strides])
-    
-    # repacked = np.matmul(strides, mask)
     with ThreadPool(mp.cpu_count()) as p:
         repacked = np.array([*p.starmap(np.matmul, zip(strides, repeat(mask)))])
 
-    # repacked = np.packbits(strides, axis=2).view(np.uint16).reshape(block.shape[0], -1)
     return np.count_nonzero(repacked == template, axis=1)

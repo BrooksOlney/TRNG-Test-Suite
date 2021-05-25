@@ -3,6 +3,7 @@ import scipy.special as ss
 import multiprocessing as mp
 import math
 from functools import partial
+from itertools import repeat
 from multiprocessing.dummy import Pool as ThreadPool
 
 def serial_test(binary):
@@ -37,25 +38,19 @@ def serial_test(binary):
     return [p1, success1, p2, success2]
 
 def sliding_window(x, m):
-    micounts = np.zeros(2**(16))
+    micounts = np.zeros(2**(16), dtype=np.int64)
     strides = np.lib.stride_tricks.sliding_window_view(x, window_shape=m)
     mask = np.array(1 << np.arange(m), dtype=np.uint16)[::-1]
     
-    strides = np.array_split(strides, math.ceil(len(strides) / 1_000_000))
+    strides = np.array_split(strides, len(strides) // 1_000_000)
     
     with ThreadPool(mp.cpu_count()) as p:
-        micounts = np.vstack([*p.imap(partial(convert_binary, mask=mask), strides)])    
+        repacked = [*p.starmap(np.matmul, zip(strides, repeat(mask)))]
+        counts = np.vstack([np.pad(c, [0, 2**16 - len(c)]) for c in p.imap(np.bincount, repacked)])
+        counts = np.sum(counts, axis=0)
+        micounts[range(len(counts))] += counts
 
-    # for s in np.array_split(strides, math.ceil(len(strides) / 1_000_000)):
-    #     repacked = s @ mask
-    #     count = np.bincount(repacked)
-    #     micounts[range(len(count))] += count
-
-    # mblocks = np.packbits(strides, axis=1).view(np.uint16).reshape(-1)
-    # counts = np.bincount(mblocks)
-    # micounts[range(counts.size)] += counts
-    # return micounts
-    return np.sum(micounts, axis=0)
+    return micounts
 
 def convert_binary(x, mask):
     repacked = x @ mask
