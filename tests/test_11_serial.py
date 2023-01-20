@@ -42,7 +42,7 @@ def sliding_window(x, m):
     strides = np.lib.stride_tricks.sliding_window_view(x, window_shape=m)
     mask = np.array(1 << np.arange(m), dtype=np.uint16)[::-1]
     
-    strides = np.array_split(strides, len(strides) // 1_000_000)
+    strides = np.array_split(strides, math.ceil(len(strides) / 1_000_000))
     
     with ThreadPool(mp.cpu_count()) as p:
         repacked = [*p.starmap(np.matmul, zip(strides, repeat(mask)))]

@@ -51,11 +51,9 @@ def linear_complexity_test(binary, M=512, K=6):
     return [p, success]
 
 def vectorized_berlekamp_massey(blocks):
-        # start = time.time()
     n = len(blocks)
     Dc = Db = blocks
     L = np.zeros(n, dtype=np.uint16)
-    # m = np.array([-1] * n, dtype=np.int16)
     i = 0
     M = 512
 

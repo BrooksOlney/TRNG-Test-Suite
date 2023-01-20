@@ -10,12 +10,8 @@ def monobit_test(binary):
         sucecss (bool): test passed/failed
     """
 
-    # binary tricks to compute popcount of u32-bit numpy array
+    # binary tricks to compute popcount of u64-bit numpy array
     ones = binary.packed.view(np.uint64)
-    # ones = ones - ((ones >> 1) & 0x55555555)
-    # ones = (ones & 0x33333333) + ((ones>> 2) & 0x33333333)
-    # ones = (((ones + (ones >> 4) & 0xF0F0F0F) * 0x1010101) & 0xffffffff) >> 24
-    
     ones -= ((ones >> 1) & 0x5555555555555555)
     ones = (ones & 0x3333333333333333) + (ones >> 2 & 0x3333333333333333)
     ones = (((ones + (ones >> 4)) & 0xf0f0f0f0f0f0f0f) * 0x101010101010101 >> 56) & 0xff
