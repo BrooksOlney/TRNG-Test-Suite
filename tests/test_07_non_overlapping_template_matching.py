@@ -19,17 +19,25 @@ def non_overlapping_template_matching_test(binary, B=1, m=9):
     n = len(bits)
     M = n // 8
     N = n // M
+    
+    numTemplates = 148
+    templateRange = np.arange(2**m,dtype=np.uint16)
+    templates = np.random.choice(templateRange,size=numTemplates).reshape(-1,1)
 
     blocks = bits[:N*M].reshape(N,M)
-    template = np.unpackbits(np.array(B, dtype=np.uint8))
+
+    results = []
+    for template in templates:
+
+        template = np.unpackbits(template.view(np.uint8))[16-m:]
     
-    if len(template) > m:
-        template = template[len(template) - m:]
-    elif len(template) < m:
-        template = np.concatenate([np.zeros((m - len(template)), dtype=np.uint8), template])
+    # if len(template) > m:
+    #     template = template[len(template) - m:]
+    # elif len(template) < m:
+    #     template = np.concatenate([np.zeros((m - len(template)), dtype=np.uint8), template])
 
     
-    template = np.dot(template, 1 << np.arange(m, dtype=np.uint16)[::-1])
+        template = np.dot(template, 1 << np.arange(m, dtype=np.uint16)[::-1])
 
     # if n > 10_000_000:
     #     with ThreadPool(mp.cpu_count()) as p:
@@ -37,18 +45,18 @@ def non_overlapping_template_matching_test(binary, B=1, m=9):
     # else:
     #     matches = np.array([template_matches(block, template) for block in blocks])
 
-    matches = non_overlapping_matches(blocks, m, template)
+        matches = non_overlapping_matches(blocks, m, template)
 
-    mu = (M - m + 1) / (2**m)
-    std = M * ((1/(2**m))- (2*m-1)/(2**(2*m)))
-    
-    chisq = np.sum(((matches - mu)**2) / std)
+        mu = (M - m + 1) / (2**m)
+        std = M * ((1/(2**m))- (2*m-1)/(2**(2*m)))
+        
+        chisq = np.sum(((matches - mu)**2) / std)
 
-    p = ss.gammaincc(N/2, chisq/2)
-    
-    success = (p >= 0.01)
-
-    return [p, success]
+        p = ss.gammaincc(N/2, chisq/2)
+        
+        success = (p >= 0.01)
+        results.append([p,success])
+    return results
 
 def non_overlapping_matches(block, m, template):
     strides = np.lib.stride_tricks.sliding_window_view(block, window_shape=m, axis=1)
