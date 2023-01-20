@@ -56,7 +56,10 @@ def non_overlapping_template_matching_test(binary, B=1, m=9):
         
         success = (p >= 0.01)
         results.append([p,success])
-    return results
+    
+    ret = sum([r[1] for r in results])
+    ret = [[ret, True],[numTemplates-ret,False]]
+    return ret
 
 def non_overlapping_matches(block, m, template):
     strides = np.lib.stride_tricks.sliding_window_view(block, window_shape=m, axis=1)

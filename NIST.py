@@ -12,6 +12,7 @@ import copy
 from multiprocessing import shared_memory
 from concurrent.futures import ProcessPoolExecutor
 import itertools as it
+import sys
 
 from tests import *
 
@@ -103,19 +104,20 @@ class TRNGtester:
 
 def main():
     # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\robert-data')
-    nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\data\random-data', bits=160_000_000)
+    # nist = TRNGtester(r'F:\Research\TRNG-Test-Suite\data\22-bit_sequences.txt', binformat='txt', bits=4_000_000)
     # nist = TRNGtester(r'/home/brooks/Repos/TRNG-Test-Suite/1b', bits=160_000_000)
+    nist = TRNGtester(sys.argv[1])
 
     # nist = TRNGtester(r'F:\Research\USF-HHL\Labs\03-P_TRNG\2010-01-01.bin')
     # nist = TRNGtester(r'/home/brooks/Repos/TRNG-Test-Suite/data/data.e', bits=1_000_000, binformat='txt')
     # nist = TRNGtester(r'F:\Research\TRNG-Test-Suite\data\e.txt',bits=1_000_000)
     start = time.time()
-    # print(nist.run_nist_tests())
-    print(maurers_universal_test(nist.binary))
+    print(nist.run_nist_tests())
+    # print(random_excursion_test(nist.binary))
     # print(approximate_entropy_test(nist.binary))
 
 
-    print(time.time() - start)
+    print(f'Total runtime: {time.time() - start}')
 
 
 if __name__ == "__main__":
