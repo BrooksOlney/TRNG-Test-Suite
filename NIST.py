@@ -1,18 +1,8 @@
 import numpy as np
-import math
-import scipy.special as ss
 import time
-from scipy.stats import rankdata, norm
 import matplotlib.pyplot as plt
-import scipy.fft as fft
-from scipy.stats import chisquare
-import multiprocessing as mp
-import ctypes
-import copy
-from multiprocessing import shared_memory
-from concurrent.futures import ProcessPoolExecutor
-import itertools as it
 import sys
+import random
 
 from tests import *
 
@@ -21,24 +11,6 @@ def random_matrix():
 
 def random_matrices(count):
     return [random_matrix() for _ in range(count)]
-
-
-
-def analyze_inds(ds, inds):
-
-    sms = 0.0
-    for i in range(len(ds)):
-        sms += analyze_ind(ds[i], inds[i])
-    
-    return sms
-
-def analyze_ind(d, ind):
-    
-    sms = 0.0
-    _inds = np.hstack([ind, np.nonzero(testSeg == d)[0] + Q + 1])
-    sms = sum(np.log2(np.diff(_inds)))
-
-    return sms
 
 class TRNGtester:
 
@@ -121,5 +93,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # mp.freeze_support()
     main()
