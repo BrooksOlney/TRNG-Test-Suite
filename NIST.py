@@ -3,6 +3,7 @@ import time
 import matplotlib.pyplot as plt
 import sys
 import random
+import copy
 
 from tests import *
 
