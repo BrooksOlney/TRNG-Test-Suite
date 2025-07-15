@@ -2,6 +2,7 @@ import numpy as np
 import multiprocessing as mp
 from multiprocessing.dummy import Pool as ThreadPool
 import scipy.special as ss
+from functools import partial
 
 def init_pool(data):
     global blocks
@@ -15,17 +16,29 @@ def linear_complexity_test(binary, M=512, K=6):
     
     # shr = mp.shared_memory.SharedMemory(create=True, size=N*(M // 8))
     # blocks = np.frombuffer(shr._buf, dtype=np.uint8).reshape(N, blocksize)
-    blocks = bytes[:N*(M // 8)].reshape(N, blocksize)
+    
+    # M not divisible by 8
+    if M%8 > 0:
+        missing_bits = M%8
+        blocks = binary.unpacked[:binary.n//M*M].reshape(-1,M)
+        numBlocks = blocks.shape[0]
 
+        padded_prefix = np.zeros((numBlocks,missing_bits),dtype=np.uint8)
+        padded_binary = np.hstack((padded_prefix,blocks))
+        blocks = np.packbits(padded_binary,axis=1)
+    else:
+        blocks = bytes[:N*(M // 8)].reshape(N, blocksize)
+    # exponents = np.array([2**i for i in range(M)])
+    
     blocks = np.array([int.from_bytes(block.tobytes(), 'big') for block in blocks])
 
     nJobs = mp.cpu_count()
 
     if len(blocks) // 1000 > nJobs:
         with mp.Pool(nJobs) as p:
-            Ls = np.hstack([*p.imap(vectorized_berlekamp_massey, np.array_split(blocks, binary.n // 1_000_000))])
+            Ls = np.hstack([*p.imap(partial(vectorized_berlekamp_massey,M=M), np.array_split(blocks, binary.n // 1_000_000))])
     else:
-        Ls = vectorized_berlekamp_massey(blocks)
+        Ls = vectorized_berlekamp_massey(blocks,M)
 
     # compute expected average and test statistic for each block
     mu = (M / 2) + ((9 + ((-1)**(M+1)))/36) - (((M/3) + (2/9)) / (2**M))
@@ -50,12 +63,11 @@ def linear_complexity_test(binary, M=512, K=6):
 
     return [p, success]
 
-def vectorized_berlekamp_massey(blocks):
+def vectorized_berlekamp_massey(blocks,M=512):
     n = len(blocks)
     Dc = Db = blocks
     L = np.zeros(n, dtype=np.uint16)
     i = 0
-    M = 512
 
     while i < M: 
         d = (Dc & 1).astype(bool)
